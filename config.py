@@ -14,13 +14,13 @@ CurrentPetrolCostCanada = 1.5
 
 # Vehicle types
 VEHICLE_TYPES = {
-    "Car": {"base_rate": 7 * CurrentPetrolCostCanada, "fuel_efficiency": 15},  # km/l
-    "Van": {"base_rate": 12 * CurrentPetrolCostCanada, "fuel_efficiency": 10},  # km/l
-    "Pickup Truck": {"base_rate": 20 * CurrentPetrolCostCanada, "fuel_efficiency": 8},  # km/l
-    "Tow Truck": {"base_rate": 30 * CurrentPetrolCostCanada, "fuel_efficiency": 6},  # km/l
-    "Reefers (Refrigerated Truck)": {"base_rate": 40 * CurrentPetrolCostCanada, "fuel_efficiency": 5},  # km/l
-    "Box Truck": {"base_rate": 35 * CurrentPetrolCostCanada, "fuel_efficiency": 7},  # km/l
-    "Flatbed Truck": {"base_rate": 45 * CurrentPetrolCostCanada, "fuel_efficiency": 6}  # km/l
+    "Car": {"base_rate": 6.6 * CurrentPetrolCostCanada, "fuel_efficiency": 15},  # km/l
+    "Van": {"base_rate": 10.8 * CurrentPetrolCostCanada, "fuel_efficiency": 10},  # km/l
+    "Pickup Truck": {"base_rate": 18 * CurrentPetrolCostCanada, "fuel_efficiency": 8},  # km/l
+    "Tow Truck": {"base_rate": 27 * CurrentPetrolCostCanada, "fuel_efficiency": 6},  # km/l
+    "Reefers (Refrigerated Truck)": {"base_rate": 36 * CurrentPetrolCostCanada, "fuel_efficiency": 5},  # km/l
+    "Box Truck": {"base_rate": 31.5 * CurrentPetrolCostCanada, "fuel_efficiency": 7},  # km/l
+    "Flatbed Truck": {"base_rate": 40.5 * CurrentPetrolCostCanada, "fuel_efficiency": 6}  # km/l
 }
 
 # Delivery categories

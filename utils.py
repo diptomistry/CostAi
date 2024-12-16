@@ -185,7 +185,7 @@ def calculate_cost(pickup_address, delivery_address, vehicle_type, delivery_cate
             "cost_per_km": f"${round(cost_per_km, 2)}",
             "total_cost": f"${delivery_cost}",
             "delivery_category_modifier": category_modifier,
-            "recommended_vehicle": vehicle_type
+            #"recommended_vehicle": vehicle_type
         }
     except Exception as e:
         logger.error(f"Cost calculation error: {str(e)}")
