@@ -39,9 +39,9 @@ def get_category_details_from_gemini(delivery_category):
         logger.info(f"Attempting to get Gemini AI details for category: {delivery_category}")
         
         # Extended prompt with more context
-        prompt =[
-            "You are an expert in logistics and delivery category classification. "
-            "For an unknown delivery category, provide a reasonable cost modifier and recommended vehicle.",
+        prompt = [
+            "You are an intelligent assistant for logistics and delivery applications. Your role is to determine the appropriate delivery category modifier based on the provided delivery category. "
+            "For an unknown delivery category, provide a reasonable cost modifier and recommended vehicle.Analyze the category name to assign a modifier in the range 0.5 to 2.0",
             "input: SENIOR APPOINTMENT", 
             "output: {\n \"modifier\": 0.7,\n \"rationale\": \"Senior appointments typically involve non-commercial transport and warrant a reduced cost.\",\n \"recommended_vehicle\": \"Car\"\n}",
             "input: FLOWER DELIVERY", 
@@ -50,6 +50,32 @@ def get_category_details_from_gemini(delivery_category):
             "output: {\n \"modifier\": 1.8,\n \"rationale\": \"Bulk furniture is heavy and requires a large vehicle with significant loading capacity.\",\n \"recommended_vehicle\": \"Flatbed Truck\"\n}",
             "input: CAKE DELIVERY", 
             "output: {\n \"modifier\": 1.3,\n \"rationale\": \"Cakes are fragile and often require temperature control to prevent spoilage.\",\n \"recommended_vehicle\": \"Reefers (Refrigerated Truck)\"\n}",
+            "input: MEDICINE", 
+            "output: {\n \"modifier\": 0.6,\n \"rationale\": \"Medical deliveries require precision and timely transport, often with special handling.\",\n \"recommended_vehicle\": \"Car\"\n}",
+            "input: GROCERY DELIVERY", 
+            "output: {\n \"modifier\": 0.9,\n \"rationale\": \"Groceries need careful handling and moderate transportation requirements.\",\n \"recommended_vehicle\": \"Van\"\n}",
+            "input: FOOD DELIVERY", 
+            "output: {\n \"modifier\": 1.0,\n \"rationale\": \"Standard food delivery with typical transportation needs.\",\n \"recommended_vehicle\": \"Car\"\n}",
+            "input: CAR PARTS", 
+            "output: {\n \"modifier\": 1.2,\n \"rationale\": \"Car parts vary in size and may require careful handling and protection.\",\n \"recommended_vehicle\": \"Pickup Truck\"\n}",
+            "input: TORONTO LAB", 
+            "output: {\n \"modifier\": 1.3,\n \"rationale\": \"Laboratory deliveries often require specialized handling and timely transport.\",\n \"recommended_vehicle\": \"Van\"\n}",
+            "input: SENIOR (PACKAGE PICKUP)", 
+            "output: {\n \"modifier\": 0.8,\n \"rationale\": \"Senior package pickups typically involve shorter, more considerate routes.\",\n \"recommended_vehicle\": \"Car\"\n}",
+            "input: SENIOR APPOINTMENT", 
+            "output: {\n \"modifier\": 1.1,\n \"rationale\": \"Senior appointments require careful, comfortable transportation.\",\n \"recommended_vehicle\": \"Car\"\n}",
+            "input: CANNABIS DELIVERY", 
+            "output: {\n \"modifier\": 1.2,\n \"rationale\": \"Regulated product requiring secure and discreet transportation.\",\n \"recommended_vehicle\": \"Car\"\n}",
+            "input: PICKUP TRUCK", 
+            "output: {\n \"modifier\": 1.0,\n \"rationale\": \"Standard delivery with moderate transportation requirements.\",\n \"recommended_vehicle\": \"Pickup Truck\"\n}",
+            "input: VAN DELIVERY", 
+            "output: {\n \"modifier\": 1.0,\n \"rationale\": \"Standard van delivery with typical transportation needs.\",\n \"recommended_vehicle\": \"Van\"\n}",
+            "input: STANDARD DELIVERY", 
+            "output: {\n \"modifier\": 1.0,\n \"rationale\": \"Typical delivery with no special handling requirements.\",\n \"recommended_vehicle\": \"Car\"\n}",
+            "input: FLOWER DELIVERY", 
+            "output: {\n \"modifier\": 1.1,\n \"rationale\": \"Flowers require gentle handling and timely delivery.\",\n \"recommended_vehicle\": \"Van\"\n}",
+            "input: CAR", 
+            "output: {\n \"modifier\": 1.0,\n \"rationale\": \"Standard car transportation with no special requirements.\",\n \"recommended_vehicle\": \"Car\"\n}",
             f"input: {delivery_category}", 
             "output: "
         ]
@@ -107,7 +133,7 @@ def calculate_cost(pickup_address, delivery_address, vehicle_type, delivery_cate
         gemini_category_details = get_category_details_from_gemini(delivery_category)
         
         # Update vehicle type and category modifier
-        vehicle_type = gemini_category_details['vehicle_type']
+        #vehicle_type = gemini_category_details['vehicle_type']
         category_modifier = gemini_category_details['modifier']
     else:
         # Use existing category modifier for known categories
