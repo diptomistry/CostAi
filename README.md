@@ -12,6 +12,12 @@ uvicorn main:app --reload
   "delivery_category": "MEDICINE",
   "vehicle_type": "Car"
 }
+{
+    "pickup_address": "100 Innovation Drive, Toronto, ON",
+    "delivery_address": "250 Tech Park, Waterloo, ON",
+    "vehicle_type": "Car", 
+    "delivery_category": "TECH EQUIPMENT DELIVERY"
+}
 
 {
   "pickup_address": "Vancouver, BC",

@@ -1,14 +1,122 @@
+import os
+import json
+import logging
 import requests
+import traceback
+import google.generativeai as genai
 from fastapi import HTTPException
 from config import VEHICLE_TYPES, DELIVERY_CATEGORIES, GOOGLE_API_KEY, CurrentPetrolCostCanada
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Configure Gemini AI
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+if not GEMINI_API_KEY:
+    raise ValueError("Gemini API key is missing. Check .env file.")
+
+genai.configure(api_key=GEMINI_API_KEY)
+
+# Create the Gemini model
+generation_config = {
+    "temperature": 1,
+    "top_p": 0.95,
+    "top_k": 40,
+    "max_output_tokens": 8192,
+    "response_mime_type": "text/plain",
+}
+gemini_model = genai.GenerativeModel(
+    model_name="gemini-2.0-flash-exp",
+    generation_config=generation_config,
+)
+
+def get_category_details_from_gemini(delivery_category):
+    """
+    Use Gemini to get details for an unknown delivery category
+    """
+    try:
+        logger.info(f"Attempting to get Gemini AI details for category: {delivery_category}")
+        
+        # Extended prompt with more context
+        prompt =[
+            "You are an expert in logistics and delivery category classification. "
+            "For an unknown delivery category, provide a reasonable cost modifier and recommended vehicle.",
+            "input: SENIOR APPOINTMENT", 
+            "output: {\n \"modifier\": 0.7,\n \"rationale\": \"Senior appointments typically involve non-commercial transport and warrant a reduced cost.\",\n \"recommended_vehicle\": \"Car\"\n}",
+            "input: FLOWER DELIVERY", 
+            "output: {\n \"modifier\": 1.2,\n \"rationale\": \"Flowers are perishable and delicate, requiring careful handling and timely delivery.\",\n \"recommended_vehicle\": \"Van\"\n}",
+            "input: FURNITURE DELIVERY", 
+            "output: {\n \"modifier\": 1.8,\n \"rationale\": \"Bulk furniture is heavy and requires a large vehicle with significant loading capacity.\",\n \"recommended_vehicle\": \"Flatbed Truck\"\n}",
+            "input: CAKE DELIVERY", 
+            "output: {\n \"modifier\": 1.3,\n \"rationale\": \"Cakes are fragile and often require temperature control to prevent spoilage.\",\n \"recommended_vehicle\": \"Reefers (Refrigerated Truck)\"\n}",
+            f"input: {delivery_category}", 
+            "output: "
+        ]
+        
+        response = gemini_model.generate_content(prompt)
+        
+        # Log the raw response
+        logger.info(f"Raw Gemini response: {response.text}")
+        
+        # Clean and parse the response
+        gemini_output = response.text.strip().replace('```json', '').replace('```', '').strip()
+        
+        # Try parsing JSON
+        try:
+            parsed_output = json.loads(gemini_output)
+            
+            # Validate the parsed output
+            if not (0.5 <= parsed_output.get('modifier', 1.0) <= 2.0):
+                logger.warning(f"Invalid modifier: {parsed_output.get('modifier')}")
+                return {'modifier': 1.0, 'vehicle_type': 'Car'}
+            
+            vehicle_type = parsed_output.get('recommended_vehicle', 'Car')
+            
+            # Validate vehicle type
+            if vehicle_type not in VEHICLE_TYPES:
+                logger.warning(f"Invalid vehicle type: {vehicle_type}")
+                vehicle_type = 'Car'
+            
+            return {
+                'modifier': parsed_output.get('modifier', 1.0),
+                'vehicle_type': vehicle_type
+            }
+        
+        except json.JSONDecodeError:
+            logger.error(f"Failed to parse JSON from Gemini response: {gemini_output}")
+            return {'modifier': 1.0, 'vehicle_type': 'Car'}
+    
+    except Exception as e:
+        # Comprehensive error logging
+        logger.error(f"Gemini AI error for category {delivery_category}:")
+        logger.error(traceback.format_exc())
+        return {
+            'modifier': 1.0,
+            'vehicle_type': 'Car'
+        }
+
 def calculate_cost(pickup_address, delivery_address, vehicle_type, delivery_category):
+    """
+    Calculate delivery cost with support for unknown delivery categories
+    """
+    # Check if delivery category exists
+    if delivery_category not in DELIVERY_CATEGORIES:
+        # Use Gemini to get category details
+        logger.info(f"Unknown delivery category: {delivery_category}. Consulting Gemini AI.")
+        gemini_category_details = get_category_details_from_gemini(delivery_category)
+        
+        # Update vehicle type and category modifier
+        vehicle_type = gemini_category_details['vehicle_type']
+        category_modifier = gemini_category_details['modifier']
+    else:
+        # Use existing category modifier for known categories
+        category_modifier = DELIVERY_CATEGORIES[delivery_category]
+
     # Validate vehicle type
     if vehicle_type not in VEHICLE_TYPES:
-        raise HTTPException(status_code=400, detail=f"Invalid vehicle type. Choose from: {list(VEHICLE_TYPES.keys())}")
-
-    # Validate delivery category
-    category_modifier = DELIVERY_CATEGORIES.get(delivery_category, 1.0)
+        logger.warning(f"Invalid vehicle type: {vehicle_type}. Defaulting to Car.")
+        vehicle_type = 'Car'
 
     # Google Maps Distance Matrix API
     url = "https://maps.googleapis.com/maps/api/distancematrix/json"
@@ -20,15 +128,19 @@ def calculate_cost(pickup_address, delivery_address, vehicle_type, delivery_cate
 
     try:
         # Fetch distance data
+        logger.info(f"Fetching distance between {pickup_address} and {delivery_address}")
         response = requests.get(url, params=params)
         data = response.json()
 
         if data["status"] != "OK":
+            logger.error(f"Google Maps API error: {data}")
             raise HTTPException(status_code=400, detail="Error fetching distance data")
 
         distance_text = data["rows"][0]["elements"][0]["distance"]["text"]
         distance_value = data["rows"][0]["elements"][0]["distance"]["value"]  # in meters
         distance_km = distance_value / 1000  # Convert meters to kilometers
+
+        logger.info(f"Distance calculated: {distance_km} km")
 
         # Calculate cost per kilometer
         vehicle = VEHICLE_TYPES[vehicle_type]
@@ -40,11 +152,16 @@ def calculate_cost(pickup_address, delivery_address, vehicle_type, delivery_cate
         # Calculate total cost
         delivery_cost = round(distance_km * cost_per_km, 2)
 
+        logger.info(f"Delivery cost calculated: ${delivery_cost}")
+
         return {
             "distance": distance_text,
             "cost_per_km": f"${round(cost_per_km, 2)}",
             "total_cost": f"${delivery_cost}",
-            "delivery_category_modifier": category_modifier
+            "delivery_category_modifier": category_modifier,
+            "recommended_vehicle": vehicle_type
         }
     except Exception as e:
+        logger.error(f"Cost calculation error: {str(e)}")
+        logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
