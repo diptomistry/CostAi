@@ -41,7 +41,7 @@ def get_category_details_from_gemini(delivery_category):
         # Extended prompt with more context
         prompt = [
             "You are an intelligent assistant for logistics and delivery applications. Your role is to determine the appropriate delivery category modifier based on the provided delivery category. "
-            "For an unknown delivery category, provide a reasonable cost modifier and recommended vehicle.Analyze the category name to assign a modifier in the range 0.5 to 2.0",
+            "For an unknown delivery category, provide a reasonable cost modifier and recommended vehicle.Analyze the category name to assign a modifier in the range 0.5 to 1.5",
             "input: SENIOR APPOINTMENT", 
             "output: {\n \"modifier\": 0.7,\n \"rationale\": \"Senior appointments typically involve non-commercial transport and warrant a reduced cost.\",\n \"recommended_vehicle\": \"Car\"\n}",
             "input: FLOWER DELIVERY", 
