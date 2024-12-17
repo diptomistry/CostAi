@@ -5,7 +5,9 @@ import requests
 import traceback
 import google.generativeai as genai
 from fastapi import HTTPException
-from config import VEHICLE_TYPES, DELIVERY_CATEGORIES, GOOGLE_API_KEY, CurrentPetrolCostCanada
+#from config import VEHICLE_TYPES, DELIVERY_CATEGORIES, GOOGLE_API_KEY, CurrentPetrolCostCanada
+from config import VEHICLE_TYPES, DELIVERY_CATEGORIES, GOOGLE_API_KEY, ConstCurrentPetrolCostCanada
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -172,7 +174,7 @@ def calculate_cost(pickup_address, delivery_address, vehicle_type, delivery_cate
         vehicle = VEHICLE_TYPES[vehicle_type]
         base_rate = vehicle["base_rate"]
         fuel_efficiency = vehicle["fuel_efficiency"]
-        fuel_cost_per_km = CurrentPetrolCostCanada / fuel_efficiency
+        fuel_cost_per_km = ConstCurrentPetrolCostCanada / fuel_efficiency
         cost_per_km = (base_rate + fuel_cost_per_km) * category_modifier
 
         # Calculate total cost
