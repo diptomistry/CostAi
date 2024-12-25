@@ -101,6 +101,24 @@ DELIVERY_CATEGORIES: dict
     "vehicle_type": "Car"
   },
   {
+    "pickup_address": "Churchville, brampton on",
+    "delivery_address": "Coleraine Ontario L4H 2G4",
+    "delivery_category": "CAR",
+    "vehicle_type": "Car"
+},
+    {
+    "pickup_address": "Churchville, brampton on",
+    "delivery_address": "150 Central Park Dr, Brampton, ON L6T 2T9",
+    "delivery_category": "CAR",
+    "vehicle_type": "Car"
+  },
+{
+    "pickup_address": "20 wexford rd, brampton on",
+    "delivery_address": "11 church st west, Bramton On",
+    "delivery_category": "CAR",
+    "vehicle_type": "Car"
+},
+  {
     "pickup_address": "100 Innovation Drive, Toronto, ON",
     "delivery_address": "250 Tech Park, Waterloo, ON",
     "vehicle_type": "Car", 

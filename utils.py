@@ -43,7 +43,7 @@ def get_category_details_from_gemini(delivery_category):
         # Extended prompt with more context
         prompt = [
             "You are an intelligent assistant for logistics and delivery applications. Your role is to determine the appropriate delivery category modifier based on the provided delivery category. "
-            "For an unknown delivery category, provide a reasonable cost modifier and recommended vehicle.Analyze the category name to assign a modifier in the range 0.5 to 1.5",
+            "For an unknown delivery category, provide a reasonable cost modifier and recommended vehicle.Analyze the category name to assign a modifier in the range 0.7 to 1.3",
             "input: SENIOR APPOINTMENT", 
             "output: {\n \"modifier\": 0.7,\n \"rationale\": \"Senior appointments typically involve non-commercial transport and warrant a reduced cost.\",\n \"recommended_vehicle\": \"Car\"\n}",
             "input: FLOWER DELIVERY", 
@@ -123,22 +123,45 @@ def get_category_details_from_gemini(delivery_category):
             'modifier': 1.0,
             'vehicle_type': 'Car'
         }
+def generate_tiers_half_km():
+    """
+    Generate tiers with progressively increasing rates of decrement for every 0.5 km.
+    Beyond 60 km, apply a constant decrease percentage.
+    """
+    tiers = []
+    cumulative_decrease = 0.00  # Start with 0% decrease
+    increment = 0.005  # Initial increment for the growth rate
+    max_decrease = 0.95  # Cap the decrease at 95%
+    max_distance = 60.0  # Maximum distance for progressive tiers in km
+    constant_decrease = 0.96  # Constant decrease beyond 60 km
+
+    for i in range(int(max_distance * 2)):  # Up to 60 km (120 x 0.5 km = 60 km)
+        if i == 0:
+            decrease = 0.00
+        else:
+            cumulative_decrease += increment
+            increment += 0.005
+
+            if cumulative_decrease > max_decrease:
+                cumulative_decrease = max_decrease
+
+        tiers.append((0.5, cumulative_decrease))
+
+    # Add a final tier to indicate a flat rate decrease beyond 60 km
+    tiers.append((float('inf'), constant_decrease))  # Infinite distance for the constant tier
+    return tiers
+
 
 def calculate_cost(pickup_address, delivery_address, vehicle_type, delivery_category):
     """
-    Calculate delivery cost with support for unknown delivery categories
+    Calculate delivery cost dynamically for each 0.5 km interval.
     """
     # Check if delivery category exists
     if delivery_category not in DELIVERY_CATEGORIES:
-        # Use Gemini to get category details
         logger.info(f"Unknown delivery category: {delivery_category}. Consulting Gemini AI.")
         gemini_category_details = get_category_details_from_gemini(delivery_category)
-        
-        # Update vehicle type and category modifier
-        #vehicle_type = gemini_category_details['vehicle_type']
         category_modifier = gemini_category_details['modifier']
     else:
-        # Use existing category modifier for known categories
         category_modifier = DELIVERY_CATEGORIES[delivery_category]
 
     # Validate vehicle type
@@ -146,7 +169,6 @@ def calculate_cost(pickup_address, delivery_address, vehicle_type, delivery_cate
         logger.warning(f"Invalid vehicle type: {vehicle_type}. Defaulting to Car.")
         vehicle_type = 'Car'
 
-    # Google Maps Distance Matrix API
     url = "https://maps.googleapis.com/maps/api/distancematrix/json"
     params = {
         "origins": pickup_address,
@@ -155,7 +177,6 @@ def calculate_cost(pickup_address, delivery_address, vehicle_type, delivery_cate
     }
 
     try:
-        # Fetch distance data
         logger.info(f"Fetching distance between {pickup_address} and {delivery_address}")
         response = requests.get(url, params=params)
         data = response.json()
@@ -170,24 +191,58 @@ def calculate_cost(pickup_address, delivery_address, vehicle_type, delivery_cate
 
         logger.info(f"Distance calculated: {distance_km} km")
 
-        # Calculate cost per kilometer
         vehicle = VEHICLE_TYPES[vehicle_type]
         base_rate = vehicle["base_rate"]
         fuel_efficiency = vehicle["fuel_efficiency"]
         fuel_cost_per_km = ConstCurrentPetrolCostCanada / fuel_efficiency
         cost_per_km = (base_rate + fuel_cost_per_km) * category_modifier
 
-        # Calculate total cost
-        delivery_cost = round(distance_km * cost_per_km, 2)
+        tiers = generate_tiers_half_km()
 
-        logger.info(f"Delivery cost calculated: ${delivery_cost}")
+        remaining_distance = distance_km
+        total_cost = 0.0
+
+        for tier_distance, decrease_percentage in tiers:
+            if remaining_distance <= 0:
+                break
+
+            # Handle infinite tier for distances beyond 60 km
+            if tier_distance == float('inf'):
+                segment_distance = remaining_distance
+            else:
+                segment_distance = min(tier_distance, remaining_distance)
+
+            adjusted_cost_per_km = cost_per_km * (1 - decrease_percentage)
+            segment_cost = segment_distance * adjusted_cost_per_km
+
+            total_cost += segment_cost
+            remaining_distance -= segment_distance
+            avg_cost_per_km = total_cost / distance_km
+            if(avg_cost_per_km<.6):
+                avg_cost_per_km=0.6
+            final_cost=distance_km*avg_cost_per_km
+            if(distance_km<4 and distance_km>0):
+                if(round(distance_km,0)==1):
+                    final_cost+=6
+                elif(round(distance_km,0)==2):
+                    final_cost+=4.8
+                elif(round(distance_km,0)==3):
+                    final_cost+=3.6
+                elif(round(distance_km,0)==4):
+                    final_cost+=2.4
+            if(final_cost<5.7):
+                final_cost=5.7
+
+            logger.info(f"Segment: {segment_distance} km, Adjusted Cost/KM: ${adjusted_cost_per_km:.4f}, "
+                        f"Segment Cost: ${segment_cost:.4f}")
+
+        logger.info(f"Total Delivery Cost: ${total_cost}")
 
         return {
             "distance": distance_text,
-            "cost_per_km": f"${round(cost_per_km, 2)}",
-            "total_cost": f"${delivery_cost}",
+            "total_cost": round(final_cost, 8),
+            "average_cost_per_km": round(avg_cost_per_km, 8),
             "delivery_category_modifier": category_modifier,
-            #"recommended_vehicle": vehicle_type
         }
     except Exception as e:
         logger.error(f"Cost calculation error: {str(e)}")
