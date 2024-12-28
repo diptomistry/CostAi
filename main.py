@@ -4,10 +4,12 @@ from routes import calculate_router
 
 # Initialize FastAPI
 app = FastAPI()
+
 # Add CORS Middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    #allow_origins=["https://yourdomain.com", "https://www.yourdomain.com"],  # Replace with your domain
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
