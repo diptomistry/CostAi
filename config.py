@@ -81,12 +81,12 @@ ConstCurrentPetrolCostCanada = get_petrol_cost()
 # Vehicle types with dynamically calculated base rates
 VEHICLE_TYPES = {
     "Car": {"base_rate": 0.95 * ConstCurrentPetrolCostCanada, "fuel_efficiency": 14},
-    "Van": {"base_rate": 2.31 * ConstCurrentPetrolCostCanada, "fuel_efficiency": 10},
-    "Pickup Truck": {"base_rate": 3.83 * ConstCurrentPetrolCostCanada, "fuel_efficiency": 8},
-    "Tow Truck": {"base_rate": 5.92 * ConstCurrentPetrolCostCanada, "fuel_efficiency": 6},
-    "Reefers (Refrigerated Truck)": {"base_rate": 7.63 * ConstCurrentPetrolCostCanada, "fuel_efficiency": 5},
-    "Box Truck": {"base_rate": 9.28 * ConstCurrentPetrolCostCanada, "fuel_efficiency": 7},
-    "Flatbed Truck": {"base_rate": 8.78 * ConstCurrentPetrolCostCanada, "fuel_efficiency": 6},
+    "Van": {"base_rate": 1.5 * ConstCurrentPetrolCostCanada, "fuel_efficiency": 10},
+    "Pickup Truck": {"base_rate": 2.5 * ConstCurrentPetrolCostCanada, "fuel_efficiency": 8},
+    "Tow Truck": {"base_rate": 3.86 * ConstCurrentPetrolCostCanada, "fuel_efficiency": 6},
+    "Reefers (Refrigerated Truck)": {"base_rate": 4.97 * ConstCurrentPetrolCostCanada, "fuel_efficiency": 5},
+    "Box Truck": {"base_rate": 6.05 * ConstCurrentPetrolCostCanada, "fuel_efficiency": 7},
+    "Flatbed Truck": {"base_rate": 5.73 * ConstCurrentPetrolCostCanada, "fuel_efficiency": 6},
 }
 
 # Delivery categories
