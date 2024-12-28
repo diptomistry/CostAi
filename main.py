@@ -4,7 +4,6 @@ from routes import calculate_router
 
 # Initialize FastAPI
 app = FastAPI()
-
 # Add CORS Middleware
 app.add_middleware(
     CORSMiddleware,
