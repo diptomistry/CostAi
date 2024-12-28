@@ -3,7 +3,7 @@ from routes import calculate_router
 
 # Initialize FastAPI
 app = FastAPI()
-
+#middleware
 # Include routes
 app.include_router(calculate_router)
 
