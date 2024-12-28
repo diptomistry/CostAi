@@ -7,7 +7,7 @@ app = FastAPI()
 # Add CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://cost-ks4h5t55q-diptos-projects-4dd7487e.vercel.app", "https://www.yourdomain.com"],  # Replace with your domain
+    allow_origins=["https://cost-ai.vercel.app/", "https://www.yourdomain.com"],  # Replace with your domain
     #allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
