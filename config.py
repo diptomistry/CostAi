@@ -11,12 +11,14 @@ load_dotenv()
 PETROL_COST_FILE = "petrol_cost.json"
 
 # Google API key
-GOOGLE_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+#GOOGLE_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+GOOGLE_API_KEY = "AIzaSyAmc3x1kHjDy8UvtI7_80Vr0bphAxm8Bl4"
 if not GOOGLE_API_KEY:
     raise ValueError("Google Maps API key is missing. Check .env file.")
 
 # Configure Gemini AI
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+#GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+GEMINI_API_KEY = "AIzaSyAmc3x1kHjDy8UvtI7_80Vr0bphAxm8Bl4"
 if not GEMINI_API_KEY:
     raise ValueError("Gemini API key is missing. Check .env file.")
 
@@ -76,8 +78,8 @@ def get_petrol_cost():
     return petrol_data["current_price_per_liter"]
 
 # Get today's petrol cost
-ConstCurrentPetrolCostCanada = get_petrol_cost()
-#ConstCurrentPetrolCostCanada=1.5
+#ConstCurrentPetrolCostCanada = get_petrol_cost()
+ConstCurrentPetrolCostCanada=1.5
 # Vehicle types with dynamically calculated base rates
 VEHICLE_TYPES = {
     "Car": {"base_rate": 0.95 * ConstCurrentPetrolCostCanada, "fuel_efficiency": 14},
