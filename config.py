@@ -78,8 +78,8 @@ def get_petrol_cost():
     return petrol_data["current_price_per_liter"]
 
 # Get today's petrol cost
-#ConstCurrentPetrolCostCanada = get_petrol_cost()
-ConstCurrentPetrolCostCanada=1.5
+ConstCurrentPetrolCostCanada = get_petrol_cost()
+#ConstCurrentPetrolCostCanada=1.5
 # Vehicle types with dynamically calculated base rates
 VEHICLE_TYPES = {
     "Car": {"base_rate": 0.95 * ConstCurrentPetrolCostCanada, "fuel_efficiency": 14},
